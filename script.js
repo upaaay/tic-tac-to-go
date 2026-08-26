@@ -9,25 +9,171 @@ let board = [
 ];
 
 let currentPlayer = "X";
-
 let gameActive = false;
-
 let selectedTeam = "X";
 
 let scoreX = 0;
-
 let scoreO = 0;
 
 
 // =====================================
-// TAMBAHAN MODE GAME
+// MODE GAME
 // =====================================
 
 let gameMode = "friend";
-
 let humanPlayer = "X";
-
 let computerPlayer = "O";
+
+
+// =====================================
+// AUDIO
+// =====================================
+
+let audioCtx = null;
+let musicInterval = null;
+let musicOn = false;
+
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+    }
+}
+
+function sound(freq, duration, type = "sine", volume = 0.08) {
+    initAudio();
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = type;
+    osc.frequency.value = freq;
+
+    gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(
+        volume,
+        audioCtx.currentTime + 0.01
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioCtx.currentTime + duration
+    );
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+}
+
+
+// Suara tombol
+function buttonSound() {
+    sound(600, 0.08, "triangle", 0.07);
+}
+
+
+// Suara klik kotak
+function clickSound() {
+    sound(450, 0.08, "sine", 0.08);
+}
+
+
+// Suara menang
+function winSound() {
+    sound(523, 0.15, "sine", 0.10);
+
+    setTimeout(() => {
+        sound(659, 0.15, "sine", 0.10);
+    }, 150);
+
+    setTimeout(() => {
+        sound(784, 0.30, "sine", 0.12);
+    }, 300);
+}
+
+
+// Suara kalah
+function loseSound() {
+    sound(330, 0.18, "sine", 0.08);
+
+    setTimeout(() => {
+        sound(220, 0.35, "sine", 0.08);
+    }, 180);
+}
+
+
+// Suara seri
+function drawSound() {
+    sound(440, 0.15, "triangle", 0.08);
+
+    setTimeout(() => {
+        sound(440, 0.15, "triangle", 0.08);
+    }, 180);
+}
+
+
+// =====================================
+// MUSIK LATAR SEDERHANA
+// =====================================
+
+const musicNotes = [
+    261.63,
+    329.63,
+    392.00,
+    329.63,
+    293.66,
+    349.23,
+    440.00,
+    349.23
+];
+
+let musicIndex = 0;
+
+function musicNote() {
+    if (!musicOn) return;
+
+    sound(
+        musicNotes[musicIndex],
+        0.28,
+        "sine",
+        0.018
+    );
+
+    musicIndex++;
+
+    if (musicIndex >= musicNotes.length) {
+        musicIndex = 0;
+    }
+}
+
+function startMusic() {
+    initAudio();
+
+    if (musicOn) return;
+
+    musicOn = true;
+    musicIndex = 0;
+
+    musicNote();
+
+    musicInterval = setInterval(() => {
+        musicNote();
+    }, 400);
+}
+
+function stopMusic() {
+    musicOn = false;
+
+    if (musicInterval) {
+        clearInterval(musicInterval);
+        musicInterval = null;
+    }
+}
 
 
 // =====================================
@@ -70,11 +216,8 @@ const cells =
 const teamButtons =
     document.querySelectorAll(".team-btn");
 
-
-// TAMBAHAN
 const modeButtons =
     document.querySelectorAll(".mode-btn");
-
 
 const turnSymbol =
     document.getElementById("turnSymbol");
@@ -88,8 +231,6 @@ const scoreXElement =
 const scoreOElement =
     document.getElementById("scoreO");
 
-
-// TAMBAHAN
 const scoreXLabel =
     document.getElementById("scoreXLabel");
 
@@ -98,7 +239,6 @@ const scoreOLabel =
 
 const gameModeText =
     document.getElementById("gameModeText");
-
 
 const resultModal =
     document.getElementById("resultModal");
@@ -125,31 +265,32 @@ const finalScoreO =
 
 goBtn.addEventListener("click", () => {
 
+    initAudio();
+    buttonSound();
+    startMusic();
+
     splashScreen.classList.add("hide");
 
 });
 
 
 // =====================================
-// TAMBAHAN: PILIH MODE
+// PILIH MODE
 // =====================================
 
 modeButtons.forEach(button => {
 
     button.addEventListener("click", () => {
 
+        buttonSound();
+
         modeButtons.forEach(btn => {
-
             btn.classList.remove("selected");
-
         });
-
 
         button.classList.add("selected");
 
-
-        gameMode =
-            button.dataset.mode;
+        gameMode = button.dataset.mode;
 
     });
 
@@ -157,25 +298,22 @@ modeButtons.forEach(button => {
 
 
 // =====================================
-// PILIH TEAM X / O
+// PILIH TEAM
 // =====================================
 
 teamButtons.forEach(button => {
 
     button.addEventListener("click", () => {
 
+        buttonSound();
+
         teamButtons.forEach(btn => {
-
             btn.classList.remove("selected");
-
         });
-
 
         button.classList.add("selected");
 
-
-        selectedTeam =
-            button.dataset.team;
+        selectedTeam = button.dataset.team;
 
     });
 
@@ -188,8 +326,9 @@ teamButtons.forEach(button => {
 
 startBtn.addEventListener("click", () => {
 
-    menu.classList.remove("active");
+    buttonSound();
 
+    menu.classList.remove("active");
     game.classList.add("active");
 
     startGame();
@@ -198,7 +337,7 @@ startBtn.addEventListener("click", () => {
 
 
 // =====================================
-// MULAI / RESET BOARD
+// MULAI GAME
 // =====================================
 
 function startGame() {
@@ -209,52 +348,28 @@ function startGame() {
         "", "", ""
     ];
 
-
     gameActive = true;
-
-
-    // X selalu mulai
     currentPlayer = "X";
-
-
-    // =================================
-    // MODE KOMPUTER
-    // =================================
 
     if (gameMode === "computer") {
 
-        humanPlayer =
-            selectedTeam;
-
+        humanPlayer = selectedTeam;
 
         computerPlayer =
             humanPlayer === "X"
                 ? "O"
                 : "X";
-
     }
-
-
-    // Bersihkan papan
 
     cells.forEach(cell => {
 
         cell.textContent = "";
-
         cell.className = "cell";
 
     });
 
-
     updateGameLabels();
-
     updateTurn();
-
-
-    // =================================
-    // JIKA PLAYER PILIH O
-    // KOMPUTER X MULAI
-    // =================================
 
     if (
         gameMode === "computer" &&
@@ -262,9 +377,7 @@ function startGame() {
     ) {
 
         setTimeout(() => {
-
             computerMove();
-
         }, 500);
 
     }
@@ -283,35 +396,21 @@ cells.forEach(cell => {
         const index =
             Number(cell.dataset.index);
 
-
-        // Kotak sudah terisi
-        // atau game selesai
-
         if (
             board[index] !== "" ||
             !gameActive
         ) {
-
             return;
-
         }
-
-
-        // =================================
-        // JIKA MODE KOMPUTER
-        // JANGAN BIARKAN PLAYER KLIK
-        // SAAT GILIRAN KOMPUTER
-        // =================================
 
         if (
             gameMode === "computer" &&
             currentPlayer === computerPlayer
         ) {
-
             return;
-
         }
 
+        clickSound();
 
         makeMove(
             index,
@@ -333,44 +432,24 @@ function makeMove(index, player) {
         !gameActive ||
         board[index] !== ""
     ) {
-
         return;
-
     }
 
+    board[index] = player;
 
-    // Simpan pemain
-
-    board[index] =
-        player;
-
-
-    const cell =
-        cells[index];
-
-
-    // Tampilkan X
+    const cell = cells[index];
 
     if (player === "X") {
 
         cell.textContent = "✕";
-
         cell.classList.add("x");
 
-    }
-
-    // Tampilkan O
-
-    else {
+    } else {
 
         cell.textContent = "○";
-
         cell.classList.add("o");
 
     }
-
-
-    // Animasi asli
 
     cell.classList.remove("pop");
 
@@ -378,34 +457,18 @@ function makeMove(index, player) {
 
     cell.classList.add("pop");
 
-
-    // Cek hasil
-
-    const finished =
-        checkWinner();
-
+    const finished = checkWinner();
 
     if (finished) {
-
         return;
-
     }
-
-
-    // Ganti giliran
 
     currentPlayer =
         currentPlayer === "X"
             ? "O"
             : "X";
 
-
     updateTurn();
-
-
-    // =================================
-    // JIKA GILIRAN KOMPUTER
-    // =================================
 
     if (
         gameMode === "computer" &&
@@ -414,9 +477,7 @@ function makeMove(index, player) {
     ) {
 
         setTimeout(() => {
-
             computerMove();
-
         }, 500);
 
     }
@@ -425,7 +486,7 @@ function makeMove(index, player) {
 
 
 // =====================================
-// KOMPUTER / AI
+// COMPUTER
 // =====================================
 
 function computerMove() {
@@ -435,15 +496,10 @@ function computerMove() {
         gameMode !== "computer" ||
         currentPlayer !== computerPlayer
     ) {
-
         return;
-
     }
 
-
-    const bestMove =
-        getBestMove();
-
+    const bestMove = getBestMove();
 
     if (bestMove !== -1) {
 
@@ -463,31 +519,18 @@ function computerMove() {
 
 function getBestMove() {
 
-    const emptyCells =
-        getEmptyCells();
-
+    const emptyCells = getEmptyCells();
 
     if (emptyCells.length === 0) {
-
         return -1;
-
     }
 
+    let bestScore = -Infinity;
+    let bestMove = emptyCells[0];
 
-    let bestScore =
-        -Infinity;
+    for (const index of emptyCells) {
 
-    let bestMove =
-        emptyCells[0];
-
-
-    for (
-        const index of emptyCells
-    ) {
-
-        board[index] =
-            computerPlayer;
-
+        board[index] = computerPlayer;
 
         const score =
             minimax(
@@ -496,23 +539,16 @@ function getBestMove() {
                 false
             );
 
-
-        board[index] =
-            "";
-
+        board[index] = "";
 
         if (score > bestScore) {
 
-            bestScore =
-                score;
-
-            bestMove =
-                index;
+            bestScore = score;
+            bestMove = index;
 
         }
 
     }
-
 
     return bestMove;
 
@@ -532,63 +568,27 @@ function minimax(
     const result =
         getBoardResult(position);
 
-
-    // Komputer menang
-
-    if (
-        result === computerPlayer
-    ) {
-
+    if (result === computerPlayer) {
         return 10 - depth;
-
     }
 
-
-    // Player menang
-
-    if (
-        result === humanPlayer
-    ) {
-
+    if (result === humanPlayer) {
         return depth - 10;
-
     }
 
-
-    // Seri
-
-    if (
-        result === "draw"
-    ) {
-
+    if (result === "draw") {
         return 0;
-
     }
-
-
-    // =================================
-    // KOMPUTER MAKSIMALKAN SKOR
-    // =================================
 
     if (isMaximizing) {
 
-        let bestScore =
-            -Infinity;
+        let bestScore = -Infinity;
 
+        for (let i = 0; i < 9; i++) {
 
-        for (
-            let i = 0;
-            i < 9;
-            i++
-        ) {
+            if (position[i] === "") {
 
-            if (
-                position[i] === ""
-            ) {
-
-                position[i] =
-                    computerPlayer;
-
+                position[i] = computerPlayer;
 
                 const score =
                     minimax(
@@ -597,50 +597,27 @@ function minimax(
                         false
                     );
 
-
-                position[i] =
-                    "";
-
+                position[i] = "";
 
                 bestScore =
                     Math.max(
                         bestScore,
                         score
                     );
-
             }
-
         }
-
 
         return bestScore;
 
-    }
+    } else {
 
+        let bestScore = Infinity;
 
-    // =================================
-    // PLAYER MEMINIMALKAN SKOR
-    // =================================
+        for (let i = 0; i < 9; i++) {
 
-    else {
+            if (position[i] === "") {
 
-        let bestScore =
-            Infinity;
-
-
-        for (
-            let i = 0;
-            i < 9;
-            i++
-        ) {
-
-            if (
-                position[i] === ""
-            ) {
-
-                position[i] =
-                    humanPlayer;
-
+                position[i] = humanPlayer;
 
                 const score =
                     minimax(
@@ -649,24 +626,17 @@ function minimax(
                         true
                     );
 
-
-                position[i] =
-                    "";
-
+                position[i] = "";
 
                 bestScore =
                     Math.min(
                         bestScore,
                         score
                     );
-
             }
-
         }
 
-
         return bestScore;
-
     }
 
 }
@@ -680,23 +650,13 @@ function getEmptyCells() {
 
     const empty = [];
 
+    for (let i = 0; i < 9; i++) {
 
-    for (
-        let i = 0;
-        i < 9;
-        i++
-    ) {
-
-        if (
-            board[i] === ""
-        ) {
-
+        if (board[i] === "") {
             empty.push(i);
-
         }
 
     }
-
 
     return empty;
 
@@ -704,7 +664,7 @@ function getEmptyCells() {
 
 
 // =====================================
-// CEK BOARD UNTUK AI
+// CEK BOARD AI
 // =====================================
 
 function getBoardResult(position) {
@@ -724,15 +684,9 @@ function getBoardResult(position) {
 
     ];
 
+    for (const pattern of winningPatterns) {
 
-    for (
-        const pattern
-        of winningPatterns
-    ) {
-
-        const [a, b, c] =
-            pattern;
-
+        const [a, b, c] = pattern;
 
         if (
             position[a] !== "" &&
@@ -746,15 +700,9 @@ function getBoardResult(position) {
 
     }
 
-
-    if (
-        !position.includes("")
-    ) {
-
+    if (!position.includes("")) {
         return "draw";
-
     }
-
 
     return null;
 
@@ -782,21 +730,11 @@ function checkWinner() {
 
     ];
 
+    let winningPattern = null;
 
-    let winningPattern =
-        null;
+    for (const pattern of winningPatterns) {
 
-
-    // Cek semua kemungkinan menang
-
-    for (
-        let pattern
-        of winningPatterns
-    ) {
-
-        const [a, b, c] =
-            pattern;
-
+        const [a, b, c] = pattern;
 
         if (
             board[a] !== "" &&
@@ -804,9 +742,7 @@ function checkWinner() {
             board[a] === board[c]
         ) {
 
-            winningPattern =
-                pattern;
-
+            winningPattern = pattern;
             break;
 
         }
@@ -814,16 +750,10 @@ function checkWinner() {
     }
 
 
-    // =================================
-    // JIKA MENANG
-    // =================================
-
+    // MENANG
     if (winningPattern) {
 
         gameActive = false;
-
-
-        // Animasi kotak pemenang
 
         winningPattern.forEach(index => {
 
@@ -833,61 +763,54 @@ function checkWinner() {
 
         });
 
-
-        // Tambah skor
-
-        if (
-            currentPlayer === "X"
-        ) {
-
+        if (currentPlayer === "X") {
             scoreX++;
-
-        }
-
-        else {
-
+        } else {
             scoreO++;
-
         }
-
 
         updateScore();
 
 
+        // Audio menang / kalah
+        if (gameMode === "computer") {
+
+            if (currentPlayer === humanPlayer) {
+                winSound();
+            } else {
+                loseSound();
+            }
+
+        } else {
+
+            winSound();
+
+        }
+
+
         setTimeout(() => {
-
             showWinner();
-
         }, 500);
-
 
         return true;
 
     }
 
 
-    // =================================
-    // JIKA SERI
-    // =================================
-
-    if (
-        !board.includes("")
-    ) {
+    // SERI
+    if (!board.includes("")) {
 
         gameActive = false;
 
+        drawSound();
 
         setTimeout(() => {
-
             showDraw();
-
         }, 400);
-
 
         return true;
 
     }
-
 
     return false;
 
@@ -895,57 +818,37 @@ function checkWinner() {
 
 
 // =====================================
-// UPDATE LABEL GAME
+// UPDATE LABEL
 // =====================================
 
 function updateGameLabels() {
 
-    if (
-        gameMode === "computer"
-    ) {
+    if (gameMode === "computer") {
 
         gameModeText.textContent =
             "PLAYER VS COMPUTER";
 
+        if (humanPlayer === "X") {
 
-        if (
-            humanPlayer === "X"
-        ) {
+            scoreXLabel.textContent = "KAMU";
+            scoreOLabel.textContent = "COMPUTER";
 
-            scoreXLabel.textContent =
-                "KAMU";
+        } else {
 
-            scoreOLabel.textContent =
-                "COMPUTER";
-
-        }
-
-        else {
-
-            scoreXLabel.textContent =
-                "COMPUTER";
-
-            scoreOLabel.textContent =
-                "KAMU";
+            scoreXLabel.textContent = "COMPUTER";
+            scoreOLabel.textContent = "KAMU";
 
         }
 
-    }
-
-    else {
+    } else {
 
         gameModeText.textContent =
             "PLAY TOGETHER";
 
-
-        scoreXLabel.textContent =
-            "TEAM X";
-
-        scoreOLabel.textContent =
-            "TEAM O";
+        scoreXLabel.textContent = "TEAM X";
+        scoreOLabel.textContent = "TEAM O";
 
     }
-
 
     updateScore();
 
@@ -958,55 +861,36 @@ function updateGameLabels() {
 
 function updateTurn() {
 
-    if (
-        gameMode === "computer"
-    ) {
+    if (gameMode === "computer") {
 
-        if (
-            currentPlayer === humanPlayer
-        ) {
+        if (currentPlayer === humanPlayer) {
 
             turnText.textContent =
                 `${currentPlayer} • KAMU`;
 
-        }
-
-        else {
+        } else {
 
             turnText.textContent =
                 `${currentPlayer} • COMPUTER`;
 
         }
 
-    }
-
-    else {
+    } else {
 
         turnText.textContent =
             currentPlayer;
 
     }
 
+    if (currentPlayer === "X") {
 
-    if (
-        currentPlayer === "X"
-    ) {
+        turnSymbol.textContent = "✕";
+        turnSymbol.style.color = "#818cf8";
 
-        turnSymbol.textContent =
-            "✕";
+    } else {
 
-        turnSymbol.style.color =
-            "#818cf8";
-
-    }
-
-    else {
-
-        turnSymbol.textContent =
-            "○";
-
-        turnSymbol.style.color =
-            "#f472b6";
+        turnSymbol.textContent = "○";
+        turnSymbol.style.color = "#f472b6";
 
     }
 
@@ -1019,129 +903,88 @@ function updateTurn() {
 
 function updateScore() {
 
-    scoreXElement.textContent =
-        scoreX;
+    scoreXElement.textContent = scoreX;
+    scoreOElement.textContent = scoreO;
 
-    scoreOElement.textContent =
-        scoreO;
-
-
-    finalScoreX.textContent =
-        scoreX;
-
-    finalScoreO.textContent =
-        scoreO;
+    finalScoreX.textContent = scoreX;
+    finalScoreO.textContent = scoreO;
 
 }
 
 
 // =====================================
-// TAMPILKAN PEMENANG
+// PEMENANG
 // =====================================
 
 function showWinner() {
 
-    resultIcon.textContent =
-        "🏆";
+    resultIcon.textContent = "🏆";
 
+    if (gameMode === "computer") {
 
-    if (
-        gameMode === "computer"
-    ) {
-
-        if (
-            currentPlayer === humanPlayer
-        ) {
+        if (currentPlayer === humanPlayer) {
 
             resultTitle.textContent =
                 "KAMU MENANG!";
 
-
             resultText.textContent =
                 "Hebat! Kamu berhasil mengalahkan komputer.";
 
-        }
-
-        else {
+        } else {
 
             resultTitle.textContent =
                 "COMPUTER MENANG!";
-
 
             resultText.textContent =
                 "Komputer berhasil memenangkan permainan.";
 
         }
 
-    }
-
-    else {
+    } else {
 
         resultTitle.textContent =
             `TEAM ${currentPlayer} MENANG!`;
-
 
         resultText.textContent =
             `Selamat! Team ${currentPlayer} berhasil memenangkan permainan.`;
 
     }
 
+    finalScoreX.textContent = scoreX;
+    finalScoreO.textContent = scoreO;
 
-    finalScoreX.textContent =
-        scoreX;
-
-    finalScoreO.textContent =
-        scoreO;
-
-
-    resultModal.classList.add(
-        "show"
-    );
+    resultModal.classList.add("show");
 
 }
 
 
 // =====================================
-// TAMPILKAN HASIL SERI
+// SERI
 // =====================================
 
 function showDraw() {
 
-    resultIcon.textContent =
-        "🤝";
-
+    resultIcon.textContent = "🤝";
 
     resultTitle.textContent =
         "HASIL SERI!";
 
-
-    if (
-        gameMode === "computer"
-    ) {
+    if (gameMode === "computer") {
 
         resultText.textContent =
             "Permainan berakhir seri. Coba lagi melawan komputer!";
 
-    }
-
-    else {
+    } else {
 
         resultText.textContent =
             "Tidak ada pemenang. Coba lagi dan kalahkan temanmu!";
 
     }
 
+    finalScoreX.textContent = scoreX;
+    finalScoreO.textContent = scoreO;
 
-    finalScoreX.textContent =
-        scoreX;
-
-    finalScoreO.textContent =
-        scoreO;
-
-
-    resultModal.classList.add(
-        "show"
-    );
+    resultModal.classList.add("show");
 
 }
 
@@ -1154,10 +997,9 @@ playAgainBtn.addEventListener(
     "click",
     () => {
 
-        resultModal.classList.remove(
-            "show"
-        );
+        buttonSound();
 
+        resultModal.classList.remove("show");
 
         startGame();
 
@@ -1166,12 +1008,14 @@ playAgainBtn.addEventListener(
 
 
 // =====================================
-// MAIN LAGI DARI GAME
+// MAIN LAGI
 // =====================================
 
 newGameBtn.addEventListener(
     "click",
     () => {
+
+        buttonSound();
 
         startGame();
 
@@ -1187,13 +1031,12 @@ resetScoreBtn.addEventListener(
     "click",
     () => {
 
-        scoreX = 0;
+        buttonSound();
 
+        scoreX = 0;
         scoreO = 0;
 
-
         updateScore();
-
         startGame();
 
     }
@@ -1208,43 +1051,33 @@ backBtn.addEventListener(
     "click",
     () => {
 
+        buttonSound();
+
         gameActive = false;
 
+        game.classList.remove("active");
 
-        game.classList.remove(
-            "active"
-        );
-
-
-        menu.classList.add(
-            "active"
-        );
+        menu.classList.add("active");
 
     }
 );
 
 
 // =====================================
-// MENU UTAMA DARI MODAL
+// MENU UTAMA
 // =====================================
 
 menuBtn.addEventListener(
     "click",
     () => {
 
-        resultModal.classList.remove(
-            "show"
-        );
+        buttonSound();
 
+        resultModal.classList.remove("show");
 
-        game.classList.remove(
-            "active"
-        );
+        game.classList.remove("active");
 
-
-        menu.classList.add(
-            "active"
-        );
+        menu.classList.add("active");
 
     }
 );
