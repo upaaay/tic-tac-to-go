@@ -59,6 +59,7 @@ body {
 .splash-symbols {
     display: flex;
     justify-content: center;
+
     gap: 25px;
 
     font-size: 65px;
@@ -84,6 +85,7 @@ body {
     margin-top: 15px;
 
     font-size: 48px;
+
     letter-spacing: 8px;
 
     opacity: 0;
@@ -101,6 +103,7 @@ body {
     height: 55px;
 
     border: none;
+
     border-radius: 18px;
 
     background: linear-gradient(
@@ -112,7 +115,9 @@ body {
     color: white;
 
     font-size: 20px;
+
     font-weight: bold;
+
     letter-spacing: 3px;
 
     cursor: pointer;
@@ -208,6 +213,7 @@ body {
 
 .container {
     width: 100%;
+
     max-width: 520px;
 
     min-height: 100vh;
@@ -215,7 +221,9 @@ body {
     margin: auto;
 
     display: flex;
+
     justify-content: center;
+
     align-items: center;
 
     padding: 25px;
@@ -224,6 +232,7 @@ body {
 
 .screen {
     width: 100%;
+
     display: none;
 }
 
@@ -261,10 +270,13 @@ body {
 
 .menu-symbols {
     display: flex;
+
     justify-content: center;
+
     gap: 20px;
 
     font-size: 55px;
+
     font-weight: bold;
 }
 
@@ -283,6 +295,7 @@ body {
     margin-top: 10px;
 
     font-size: 36px;
+
     letter-spacing: 4px;
 }
 
@@ -314,6 +327,7 @@ body {
 
 .team-buttons {
     display: flex;
+
     justify-content: center;
 
     gap: 15px;
@@ -322,9 +336,11 @@ body {
 
 .team-btn {
     width: 140px;
+
     height: 135px;
 
     border: 2px solid rgba(255,255,255,0.1);
+
     border-radius: 25px;
 
     background: rgba(255,255,255,0.05);
@@ -334,8 +350,11 @@ body {
     cursor: pointer;
 
     display: flex;
+
     flex-direction: column;
+
     justify-content: center;
+
     align-items: center;
 
     transition: 0.2s ease;
@@ -344,6 +363,7 @@ body {
 
 .team-btn span {
     font-size: 55px;
+
     font-weight: bold;
 }
 
@@ -386,6 +406,7 @@ body {
 
 .main-btn {
     width: 100%;
+
     max-width: 330px;
 
     display: block;
@@ -395,6 +416,7 @@ body {
     padding: 18px;
 
     border: none;
+
     border-radius: 18px;
 
     background: linear-gradient(
@@ -406,6 +428,7 @@ body {
     color: white;
 
     font-size: 16px;
+
     font-weight: bold;
 
     letter-spacing: 1px;
@@ -466,9 +489,11 @@ body {
 
 .icon-btn {
     width: 45px;
+
     height: 45px;
 
     border: 1px solid rgba(255,255,255,0.1);
+
     border-radius: 14px;
 
     background: rgba(255,255,255,0.06);
@@ -499,7 +524,9 @@ body {
 
 .score-board {
     display: flex;
+
     justify-content: center;
+
     align-items: center;
 
     gap: 15px;
@@ -525,6 +552,7 @@ body {
 
 .score-symbol {
     font-size: 30px;
+
     font-weight: bold;
 }
 
@@ -561,6 +589,7 @@ body {
 
 .vs {
     color: #6b7280;
+
     font-weight: bold;
 }
 
@@ -581,6 +610,7 @@ body {
     background: rgba(255,255,255,0.06);
 
     display: flex;
+
     align-items: center;
 
     gap: 8px;
@@ -593,6 +623,7 @@ body {
 
 #turnSymbol {
     font-size: 20px;
+
     font-weight: bold;
 
     color: #818cf8;
@@ -775,6 +806,7 @@ body {
     display: none;
 
     justify-content: center;
+
     align-items: center;
 
     padding: 25px;
@@ -792,6 +824,7 @@ body {
 
 .modal-content {
     width: 100%;
+
     max-width: 380px;
 
     padding: 35px 25px;
@@ -855,7 +888,9 @@ body {
     margin-top: 20px;
 
     display: flex;
+
     justify-content: center;
+
     align-items: center;
 
     gap: 15px;
@@ -913,6 +948,91 @@ body {
 
 
 /* =========================
+   TAMBAHAN SAJA
+   MODE TEMAN / KOMPUTER
+========================= */
+
+.mode-select {
+    margin-top: 45px;
+}
+
+
+.mode-buttons {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 15px;
+}
+
+
+.mode-btn {
+    width: 140px;
+
+    height: 135px;
+
+    border: 2px solid rgba(255,255,255,0.1);
+
+    border-radius: 25px;
+
+    background: rgba(255,255,255,0.05);
+
+    color: white;
+
+    cursor: pointer;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    transition: 0.2s ease;
+}
+
+
+.mode-btn span {
+    font-size: 45px;
+
+    font-weight: bold;
+}
+
+
+.mode-btn small {
+    margin-top: 8px;
+
+    color: #9ca3af;
+}
+
+
+.mode-btn:hover {
+    transform: translateY(-5px);
+}
+
+
+.mode-btn:active {
+    transform: scale(0.9);
+}
+
+
+.mode-btn.selected {
+    border-color: #818cf8;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(99,102,241,0.3),
+            rgba(139,92,246,0.12)
+        );
+
+    box-shadow:
+        0 0 30px rgba(99,102,241,0.25);
+}
+
+
+/* =========================
    RESPONSIVE
 ========================= */
 
@@ -922,18 +1042,30 @@ body {
         padding: 18px;
     }
 
+
     .menu-logo h1 {
         font-size: 29px;
     }
 
+
     .team-btn {
         width: 125px;
+
         height: 120px;
     }
+
+
+    .mode-btn {
+        width: 125px;
+
+        height: 120px;
+    }
+
 
     .board {
         gap: 7px;
     }
+
 
     .cell {
         border-radius: 17px;

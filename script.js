@@ -20,6 +20,17 @@ let scoreO = 0;
 
 
 // =====================================
+// TAMBAHAN MODE GAME
+// =====================================
+
+let gameMode = "friend";
+
+let humanPlayer = "X";
+
+let computerPlayer = "O";
+
+
+// =====================================
 // ELEMENT
 // =====================================
 
@@ -29,13 +40,11 @@ const splashScreen =
 const goBtn =
     document.getElementById("goBtn");
 
-
 const menu =
     document.getElementById("menu");
 
 const game =
     document.getElementById("game");
-
 
 const startBtn =
     document.getElementById("startBtn");
@@ -46,7 +55,6 @@ const backBtn =
 const resetScoreBtn =
     document.getElementById("resetScoreBtn");
 
-
 const newGameBtn =
     document.getElementById("newGameBtn");
 
@@ -56,12 +64,16 @@ const playAgainBtn =
 const menuBtn =
     document.getElementById("menuBtn");
 
-
 const cells =
     document.querySelectorAll(".cell");
 
 const teamButtons =
     document.querySelectorAll(".team-btn");
+
+
+// TAMBAHAN
+const modeButtons =
+    document.querySelectorAll(".mode-btn");
 
 
 const turnSymbol =
@@ -70,12 +82,22 @@ const turnSymbol =
 const turnText =
     document.getElementById("turnText");
 
-
 const scoreXElement =
     document.getElementById("scoreX");
 
 const scoreOElement =
     document.getElementById("scoreO");
+
+
+// TAMBAHAN
+const scoreXLabel =
+    document.getElementById("scoreXLabel");
+
+const scoreOLabel =
+    document.getElementById("scoreOLabel");
+
+const gameModeText =
+    document.getElementById("gameModeText");
 
 
 const resultModal =
@@ -89,7 +111,6 @@ const resultTitle =
 
 const resultText =
     document.getElementById("resultText");
-
 
 const finalScoreX =
     document.getElementById("finalScoreX");
@@ -105,6 +126,32 @@ const finalScoreO =
 goBtn.addEventListener("click", () => {
 
     splashScreen.classList.add("hide");
+
+});
+
+
+// =====================================
+// TAMBAHAN: PILIH MODE
+// =====================================
+
+modeButtons.forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        modeButtons.forEach(btn => {
+
+            btn.classList.remove("selected");
+
+        });
+
+
+        button.classList.add("selected");
+
+
+        gameMode =
+            button.dataset.mode;
+
+    });
 
 });
 
@@ -145,7 +192,6 @@ startBtn.addEventListener("click", () => {
 
     game.classList.add("active");
 
-
     startGame();
 
 });
@@ -167,10 +213,29 @@ function startGame() {
     gameActive = true;
 
 
-    // Dalam Tic Tac Toe X selalu mulai
-
+    // X selalu mulai
     currentPlayer = "X";
 
+
+    // =================================
+    // MODE KOMPUTER
+    // =================================
+
+    if (gameMode === "computer") {
+
+        humanPlayer =
+            selectedTeam;
+
+
+        computerPlayer =
+            humanPlayer === "X"
+                ? "O"
+                : "X";
+
+    }
+
+
+    // Bersihkan papan
 
     cells.forEach(cell => {
 
@@ -181,7 +246,28 @@ function startGame() {
     });
 
 
+    updateGameLabels();
+
     updateTurn();
+
+
+    // =================================
+    // JIKA PLAYER PILIH O
+    // KOMPUTER X MULAI
+    // =================================
+
+    if (
+        gameMode === "computer" &&
+        currentPlayer === computerPlayer
+    ) {
+
+        setTimeout(() => {
+
+            computerMove();
+
+        }, 500);
+
+    }
 
 }
 
@@ -195,11 +281,10 @@ cells.forEach(cell => {
     cell.addEventListener("click", () => {
 
         const index =
-            cell.dataset.index;
+            Number(cell.dataset.index);
 
 
-        // Jangan bisa klik jika
-        // kotak sudah terisi
+        // Kotak sudah terisi
         // atau game selesai
 
         if (
@@ -212,45 +297,468 @@ cells.forEach(cell => {
         }
 
 
-        // Simpan pemain
+        // =================================
+        // JIKA MODE KOMPUTER
+        // JANGAN BIARKAN PLAYER KLIK
+        // SAAT GILIRAN KOMPUTER
+        // =================================
 
-        board[index] =
-            currentPlayer;
+        if (
+            gameMode === "computer" &&
+            currentPlayer === computerPlayer
+        ) {
 
-
-        // Tampilkan X atau O
-
-        if (currentPlayer === "X") {
-
-            cell.textContent = "✕";
-
-            cell.classList.add("x");
-
-        } else {
-
-            cell.textContent = "○";
-
-            cell.classList.add("o");
+            return;
 
         }
 
 
-        // Animasi kecil ke besar
-
-        cell.classList.remove("pop");
-
-        void cell.offsetWidth;
-
-        cell.classList.add("pop");
-
-
-        // Cek hasil
-
-        checkWinner();
+        makeMove(
+            index,
+            currentPlayer
+        );
 
     });
 
 });
+
+
+// =====================================
+// MAKE MOVE
+// =====================================
+
+function makeMove(index, player) {
+
+    if (
+        !gameActive ||
+        board[index] !== ""
+    ) {
+
+        return;
+
+    }
+
+
+    // Simpan pemain
+
+    board[index] =
+        player;
+
+
+    const cell =
+        cells[index];
+
+
+    // Tampilkan X
+
+    if (player === "X") {
+
+        cell.textContent = "✕";
+
+        cell.classList.add("x");
+
+    }
+
+    // Tampilkan O
+
+    else {
+
+        cell.textContent = "○";
+
+        cell.classList.add("o");
+
+    }
+
+
+    // Animasi asli
+
+    cell.classList.remove("pop");
+
+    void cell.offsetWidth;
+
+    cell.classList.add("pop");
+
+
+    // Cek hasil
+
+    const finished =
+        checkWinner();
+
+
+    if (finished) {
+
+        return;
+
+    }
+
+
+    // Ganti giliran
+
+    currentPlayer =
+        currentPlayer === "X"
+            ? "O"
+            : "X";
+
+
+    updateTurn();
+
+
+    // =================================
+    // JIKA GILIRAN KOMPUTER
+    // =================================
+
+    if (
+        gameMode === "computer" &&
+        currentPlayer === computerPlayer &&
+        gameActive
+    ) {
+
+        setTimeout(() => {
+
+            computerMove();
+
+        }, 500);
+
+    }
+
+}
+
+
+// =====================================
+// KOMPUTER / AI
+// =====================================
+
+function computerMove() {
+
+    if (
+        !gameActive ||
+        gameMode !== "computer" ||
+        currentPlayer !== computerPlayer
+    ) {
+
+        return;
+
+    }
+
+
+    const bestMove =
+        getBestMove();
+
+
+    if (bestMove !== -1) {
+
+        makeMove(
+            bestMove,
+            computerPlayer
+        );
+
+    }
+
+}
+
+
+// =====================================
+// AI MINIMAX
+// =====================================
+
+function getBestMove() {
+
+    const emptyCells =
+        getEmptyCells();
+
+
+    if (emptyCells.length === 0) {
+
+        return -1;
+
+    }
+
+
+    let bestScore =
+        -Infinity;
+
+    let bestMove =
+        emptyCells[0];
+
+
+    for (
+        const index of emptyCells
+    ) {
+
+        board[index] =
+            computerPlayer;
+
+
+        const score =
+            minimax(
+                board,
+                0,
+                false
+            );
+
+
+        board[index] =
+            "";
+
+
+        if (score > bestScore) {
+
+            bestScore =
+                score;
+
+            bestMove =
+                index;
+
+        }
+
+    }
+
+
+    return bestMove;
+
+}
+
+
+// =====================================
+// MINIMAX
+// =====================================
+
+function minimax(
+    position,
+    depth,
+    isMaximizing
+) {
+
+    const result =
+        getBoardResult(position);
+
+
+    // Komputer menang
+
+    if (
+        result === computerPlayer
+    ) {
+
+        return 10 - depth;
+
+    }
+
+
+    // Player menang
+
+    if (
+        result === humanPlayer
+    ) {
+
+        return depth - 10;
+
+    }
+
+
+    // Seri
+
+    if (
+        result === "draw"
+    ) {
+
+        return 0;
+
+    }
+
+
+    // =================================
+    // KOMPUTER MAKSIMALKAN SKOR
+    // =================================
+
+    if (isMaximizing) {
+
+        let bestScore =
+            -Infinity;
+
+
+        for (
+            let i = 0;
+            i < 9;
+            i++
+        ) {
+
+            if (
+                position[i] === ""
+            ) {
+
+                position[i] =
+                    computerPlayer;
+
+
+                const score =
+                    minimax(
+                        position,
+                        depth + 1,
+                        false
+                    );
+
+
+                position[i] =
+                    "";
+
+
+                bestScore =
+                    Math.max(
+                        bestScore,
+                        score
+                    );
+
+            }
+
+        }
+
+
+        return bestScore;
+
+    }
+
+
+    // =================================
+    // PLAYER MEMINIMALKAN SKOR
+    // =================================
+
+    else {
+
+        let bestScore =
+            Infinity;
+
+
+        for (
+            let i = 0;
+            i < 9;
+            i++
+        ) {
+
+            if (
+                position[i] === ""
+            ) {
+
+                position[i] =
+                    humanPlayer;
+
+
+                const score =
+                    minimax(
+                        position,
+                        depth + 1,
+                        true
+                    );
+
+
+                position[i] =
+                    "";
+
+
+                bestScore =
+                    Math.min(
+                        bestScore,
+                        score
+                    );
+
+            }
+
+        }
+
+
+        return bestScore;
+
+    }
+
+}
+
+
+// =====================================
+// KOTAK KOSONG
+// =====================================
+
+function getEmptyCells() {
+
+    const empty = [];
+
+
+    for (
+        let i = 0;
+        i < 9;
+        i++
+    ) {
+
+        if (
+            board[i] === ""
+        ) {
+
+            empty.push(i);
+
+        }
+
+    }
+
+
+    return empty;
+
+}
+
+
+// =====================================
+// CEK BOARD UNTUK AI
+// =====================================
+
+function getBoardResult(position) {
+
+    const winningPatterns = [
+
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+
+        [0, 4, 8],
+        [2, 4, 6]
+
+    ];
+
+
+    for (
+        const pattern
+        of winningPatterns
+    ) {
+
+        const [a, b, c] =
+            pattern;
+
+
+        if (
+            position[a] !== "" &&
+            position[a] === position[b] &&
+            position[a] === position[c]
+        ) {
+
+            return position[a];
+
+        }
+
+    }
+
+
+    if (
+        !position.includes("")
+    ) {
+
+        return "draw";
+
+    }
+
+
+    return null;
+
+}
 
 
 // =====================================
@@ -275,14 +783,19 @@ function checkWinner() {
     ];
 
 
-    let winningPattern = null;
+    let winningPattern =
+        null;
 
 
     // Cek semua kemungkinan menang
 
-    for (let pattern of winningPatterns) {
+    for (
+        let pattern
+        of winningPatterns
+    ) {
 
-        const [a, b, c] = pattern;
+        const [a, b, c] =
+            pattern;
 
 
         if (
@@ -291,7 +804,8 @@ function checkWinner() {
             board[a] === board[c]
         ) {
 
-            winningPattern = pattern;
+            winningPattern =
+                pattern;
 
             break;
 
@@ -309,22 +823,28 @@ function checkWinner() {
         gameActive = false;
 
 
-        // Beri animasi kotak pemenang
+        // Animasi kotak pemenang
 
         winningPattern.forEach(index => {
 
-            cells[index].classList.add("win");
+            cells[index]
+                .classList
+                .add("win");
 
         });
 
 
         // Tambah skor
 
-        if (currentPlayer === "X") {
+        if (
+            currentPlayer === "X"
+        ) {
 
             scoreX++;
 
-        } else {
+        }
+
+        else {
 
             scoreO++;
 
@@ -334,9 +854,6 @@ function checkWinner() {
         updateScore();
 
 
-        // Tunggu sedikit supaya
-        // pemain melihat kemenangan
-
         setTimeout(() => {
 
             showWinner();
@@ -344,7 +861,7 @@ function checkWinner() {
         }, 500);
 
 
-        return;
+        return true;
 
     }
 
@@ -353,7 +870,9 @@ function checkWinner() {
     // JIKA SERI
     // =================================
 
-    if (!board.includes("")) {
+    if (
+        !board.includes("")
+    ) {
 
         gameActive = false;
 
@@ -365,22 +884,70 @@ function checkWinner() {
         }, 400);
 
 
-        return;
+        return true;
 
     }
 
 
-    // =================================
-    // GANTI GILIRAN
-    // =================================
+    return false;
 
-    currentPlayer =
-        currentPlayer === "X"
-            ? "O"
-            : "X";
+}
 
 
-    updateTurn();
+// =====================================
+// UPDATE LABEL GAME
+// =====================================
+
+function updateGameLabels() {
+
+    if (
+        gameMode === "computer"
+    ) {
+
+        gameModeText.textContent =
+            "PLAYER VS COMPUTER";
+
+
+        if (
+            humanPlayer === "X"
+        ) {
+
+            scoreXLabel.textContent =
+                "KAMU";
+
+            scoreOLabel.textContent =
+                "COMPUTER";
+
+        }
+
+        else {
+
+            scoreXLabel.textContent =
+                "COMPUTER";
+
+            scoreOLabel.textContent =
+                "KAMU";
+
+        }
+
+    }
+
+    else {
+
+        gameModeText.textContent =
+            "PLAY TOGETHER";
+
+
+        scoreXLabel.textContent =
+            "TEAM X";
+
+        scoreOLabel.textContent =
+            "TEAM O";
+
+    }
+
+
+    updateScore();
 
 }
 
@@ -391,20 +958,52 @@ function checkWinner() {
 
 function updateTurn() {
 
-    turnText.textContent =
-        currentPlayer;
+    if (
+        gameMode === "computer"
+    ) {
+
+        if (
+            currentPlayer === humanPlayer
+        ) {
+
+            turnText.textContent =
+                `${currentPlayer} • KAMU`;
+
+        }
+
+        else {
+
+            turnText.textContent =
+                `${currentPlayer} • COMPUTER`;
+
+        }
+
+    }
+
+    else {
+
+        turnText.textContent =
+            currentPlayer;
+
+    }
 
 
-    if (currentPlayer === "X") {
+    if (
+        currentPlayer === "X"
+    ) {
 
-        turnSymbol.textContent = "✕";
+        turnSymbol.textContent =
+            "✕";
 
         turnSymbol.style.color =
             "#818cf8";
 
-    } else {
+    }
 
-        turnSymbol.textContent = "○";
+    else {
+
+        turnSymbol.textContent =
+            "○";
 
         turnSymbol.style.color =
             "#f472b6";
@@ -442,15 +1041,50 @@ function updateScore() {
 
 function showWinner() {
 
-    resultIcon.textContent = "🏆";
+    resultIcon.textContent =
+        "🏆";
 
 
-    resultTitle.textContent =
-        `TEAM ${currentPlayer} MENANG!`;
+    if (
+        gameMode === "computer"
+    ) {
+
+        if (
+            currentPlayer === humanPlayer
+        ) {
+
+            resultTitle.textContent =
+                "KAMU MENANG!";
 
 
-    resultText.textContent =
-        `Selamat! Team ${currentPlayer} berhasil memenangkan permainan.`;
+            resultText.textContent =
+                "Hebat! Kamu berhasil mengalahkan komputer.";
+
+        }
+
+        else {
+
+            resultTitle.textContent =
+                "COMPUTER MENANG!";
+
+
+            resultText.textContent =
+                "Komputer berhasil memenangkan permainan.";
+
+        }
+
+    }
+
+    else {
+
+        resultTitle.textContent =
+            `TEAM ${currentPlayer} MENANG!`;
+
+
+        resultText.textContent =
+            `Selamat! Team ${currentPlayer} berhasil memenangkan permainan.`;
+
+    }
 
 
     finalScoreX.textContent =
@@ -460,7 +1094,9 @@ function showWinner() {
         scoreO;
 
 
-    resultModal.classList.add("show");
+    resultModal.classList.add(
+        "show"
+    );
 
 }
 
@@ -471,15 +1107,29 @@ function showWinner() {
 
 function showDraw() {
 
-    resultIcon.textContent = "🤝";
+    resultIcon.textContent =
+        "🤝";
 
 
     resultTitle.textContent =
         "HASIL SERI!";
 
 
-    resultText.textContent =
-        "Tidak ada pemenang. Coba lagi dan kalahkan temanmu!";
+    if (
+        gameMode === "computer"
+    ) {
+
+        resultText.textContent =
+            "Permainan berakhir seri. Coba lagi melawan komputer!";
+
+    }
+
+    else {
+
+        resultText.textContent =
+            "Tidak ada pemenang. Coba lagi dan kalahkan temanmu!";
+
+    }
 
 
     finalScoreX.textContent =
@@ -489,7 +1139,9 @@ function showDraw() {
         scoreO;
 
 
-    resultModal.classList.add("show");
+    resultModal.classList.add(
+        "show"
+    );
 
 }
 
@@ -498,72 +1150,101 @@ function showDraw() {
 // MAIN LAGI DARI MODAL
 // =====================================
 
-playAgainBtn.addEventListener("click", () => {
+playAgainBtn.addEventListener(
+    "click",
+    () => {
 
-    resultModal.classList.remove("show");
+        resultModal.classList.remove(
+            "show"
+        );
 
 
-    startGame();
+        startGame();
 
-});
+    }
+);
 
 
 // =====================================
 // MAIN LAGI DARI GAME
 // =====================================
 
-newGameBtn.addEventListener("click", () => {
+newGameBtn.addEventListener(
+    "click",
+    () => {
 
-    startGame();
+        startGame();
 
-});
+    }
+);
 
 
 // =====================================
 // RESET SKOR
 // =====================================
 
-resetScoreBtn.addEventListener("click", () => {
+resetScoreBtn.addEventListener(
+    "click",
+    () => {
 
-    scoreX = 0;
+        scoreX = 0;
 
-    scoreO = 0;
-
-
-    updateScore();
+        scoreO = 0;
 
 
-    startGame();
+        updateScore();
 
-});
+        startGame();
+
+    }
+);
 
 
 // =====================================
 // KEMBALI KE MENU
 // =====================================
 
-backBtn.addEventListener("click", () => {
+backBtn.addEventListener(
+    "click",
+    () => {
 
-    gameActive = false;
+        gameActive = false;
 
 
-    game.classList.remove("active");
+        game.classList.remove(
+            "active"
+        );
 
-    menu.classList.add("active");
 
-});
+        menu.classList.add(
+            "active"
+        );
+
+    }
+);
 
 
 // =====================================
 // MENU UTAMA DARI MODAL
 // =====================================
 
-menuBtn.addEventListener("click", () => {
+menuBtn.addEventListener(
+    "click",
+    () => {
 
-    resultModal.classList.remove("show");
+        resultModal.classList.remove(
+            "show"
+        );
 
-    game.classList.remove("active");
 
-    menu.classList.add("active");
+        game.classList.remove(
+            "active"
+        );
 
-});
+
+        menu.classList.add(
+            "active"
+        );
+
+    }
+);

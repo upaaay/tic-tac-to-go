@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Tic Tac To Go</title>
-
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
@@ -14,6 +14,7 @@
     <!-- =========================
          SPLASH SCREEN
     ========================== -->
+
     <div id="splashScreen" class="splash-screen">
 
         <div class="splash-content">
@@ -23,7 +24,9 @@
                 <span class="symbol-o">○</span>
             </div>
 
-            <h1 class="splash-title">TIC TAC</h1>
+            <h1 class="splash-title">
+                TIC TAC
+            </h1>
 
             <button id="goBtn" class="go-btn">
                 GO
@@ -37,15 +40,17 @@
     <!-- =========================
          CONTAINER
     ========================== -->
-    <div class="container">
 
+    <div class="container">
 
         <!-- =========================
              MENU UTAMA
         ========================== -->
+
         <section id="menu" class="screen active">
 
             <div class="menu-logo">
+
                 <div class="menu-symbols">
                     <span>✕</span>
                     <span>○</span>
@@ -54,25 +59,85 @@
                 <h1>TIC TAC TO GO</h1>
 
                 <p>PLAY TOGETHER</p>
+
+            </div>
+
+
+            <!-- =========================
+                 TAMBAHAN: PILIH MODE
+            ========================== -->
+
+            <div class="player-select mode-select">
+
+                <h3>PILIH MODE</h3>
+
+                <div class="mode-buttons">
+
+                    <button
+                        class="mode-btn selected"
+                        data-mode="friend"
+                    >
+
+                        <span>👥</span>
+
+                        <small>
+                            TEMAN
+                        </small>
+
+                    </button>
+
+
+                    <button
+                        class="mode-btn"
+                        data-mode="computer"
+                    >
+
+                        <span>🤖</span>
+
+                        <small>
+                            KOMPUTER
+                        </small>
+
+                    </button>
+
+                </div>
+
             </div>
 
 
             <!-- PILIH TEAM -->
+
             <div class="player-select">
 
                 <h3>PILIH TIM</h3>
 
                 <div class="team-buttons">
 
-                    <button class="team-btn selected" data-team="X">
+                    <button
+                        class="team-btn selected"
+                        data-team="X"
+                    >
+
                         <span>✕</span>
-                        <small>TEAM X</small>
+
+                        <small>
+                            TEAM X
+                        </small>
+
                     </button>
 
 
-                    <button class="team-btn" data-team="O">
+                    <button
+                        class="team-btn"
+                        data-team="O"
+                    >
+
                         <span>○</span>
-                        <small>TEAM O</small>
+
+                        <small>
+                            TEAM O
+                        </small>
+
                     </button>
 
                 </div>
@@ -81,8 +146,11 @@
 
 
             <button id="startBtn" class="main-btn">
+
                 MULAI GAME
+
                 <span>→</span>
+
             </button>
 
         </section>
@@ -91,10 +159,11 @@
         <!-- =========================
              HALAMAN GAME
         ========================== -->
+
         <section id="game" class="screen">
 
-
             <!-- HEADER -->
+
             <div class="game-header">
 
                 <button id="backBtn" class="icon-btn">
@@ -103,12 +172,22 @@
 
 
                 <div class="game-title">
-                    <h2>TIC TAC TO GO</h2>
-                    <p>PLAY TOGETHER</p>
+
+                    <h2>
+                        TIC TAC TO GO
+                    </h2>
+
+                    <p id="gameModeText">
+                        PLAY TOGETHER
+                    </p>
+
                 </div>
 
 
-                <button id="resetScoreBtn" class="icon-btn">
+                <button
+                    id="resetScoreBtn"
+                    class="icon-btn"
+                >
                     ↻
                 </button>
 
@@ -116,29 +195,44 @@
 
 
             <!-- SCORE -->
+
             <div class="score-board">
 
                 <div class="score-card x-card">
 
-                    <div class="score-symbol">✕</div>
+                    <div class="score-symbol">
+                        ✕
+                    </div>
 
-                    <span>TEAM X</span>
+                    <span id="scoreXLabel">
+                        TEAM X
+                    </span>
 
-                    <strong id="scoreX">0</strong>
+                    <strong id="scoreX">
+                        0
+                    </strong>
 
                 </div>
 
 
-                <div class="vs">VS</div>
+                <div class="vs">
+                    VS
+                </div>
 
 
                 <div class="score-card o-card">
 
-                    <div class="score-symbol">○</div>
+                    <div class="score-symbol">
+                        ○
+                    </div>
 
-                    <span>TEAM O</span>
+                    <span id="scoreOLabel">
+                        TEAM O
+                    </span>
 
-                    <strong id="scoreO">0</strong>
+                    <strong id="scoreO">
+                        0
+                    </strong>
 
                 </div>
 
@@ -146,9 +240,12 @@
 
 
             <!-- GILIRAN -->
+
             <div class="turn-box">
 
-                <span id="turnSymbol">✕</span>
+                <span id="turnSymbol">
+                    ✕
+                </span>
 
                 <span>
                     GILIRAN TEAM
@@ -159,6 +256,7 @@
 
 
             <!-- BOARD -->
+
             <div id="board" class="board">
 
                 <button class="cell" data-index="0"></button>
@@ -177,10 +275,13 @@
 
 
             <!-- MAIN LAGI -->
-            <button id="newGameBtn" class="new-game-btn">
+
+            <button
+                id="newGameBtn"
+                class="new-game-btn"
+            >
                 🔄 MAIN LAGI
             </button>
-
 
         </section>
 
@@ -190,11 +291,15 @@
     <!-- =========================
          MODAL HASIL
     ========================== -->
+
     <div id="resultModal" class="modal">
 
         <div class="modal-content">
 
-            <div id="resultIcon" class="result-icon">
+            <div
+                id="resultIcon"
+                class="result-icon"
+            >
                 🏆
             </div>
 
@@ -203,31 +308,41 @@
             </h2>
 
             <p id="resultText">
-                Selamat! Kamu berhasil memenangkan permainan.
+                Selamat! Team X berhasil memenangkan permainan.
             </p>
 
 
             <div class="result-score">
+
                 <span>
                     ✕
                     <b id="finalScoreX">0</b>
                 </span>
 
-                <span class="result-dash">—</span>
+                <span class="result-dash">
+                    —
+                </span>
 
                 <span>
                     <b id="finalScoreO">0</b>
                     ○
                 </span>
+
             </div>
 
 
-            <button id="playAgainBtn" class="main-btn">
+            <button
+                id="playAgainBtn"
+                class="main-btn"
+            >
                 MAIN LAGI →
             </button>
 
 
-            <button id="menuBtn" class="menu-btn">
+            <button
+                id="menuBtn"
+                class="menu-btn"
+            >
                 🏠 MENU UTAMA
             </button>
 
@@ -239,4 +354,5 @@
     <script src="script.js"></script>
 
 </body>
+
 </html>
